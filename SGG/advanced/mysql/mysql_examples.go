@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // 只执行驱动的初始化代码，不直接使用驱动包
 )
 
 // 定义用户结构体

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -498,6 +499,36 @@ func keyOperations(client *redis.Client) {
 		}
 	}
 }
+
+// 常见错误类型
+func errorHandling(client *redis.Client) {
+	// 检查键不存在错误
+	_, err := client.Get(ctx, "nonexistent").Result()
+	if err == redis.Nil {
+		fmt.Println("键不存在")
+	} else if err != nil {
+		panic(err)
+	}
+
+	// 检查网络错误
+	_, err = client.Ping(ctx).Result()
+	if err != nil {
+		if strings.Contains(err.Error(), "connection refused") {
+			fmt.Println("无法连接到Redis")
+		} else {
+			panic(err)
+		}
+	}
+
+	// 检查类型错误
+	// 如果对哈希键使用GET命令，会返回类型错误
+	client.HSet(ctx, "myhash", "field", "value")
+	_, err = client.Get(ctx, "myhash").Result()
+	if err != nil && strings.Contains(err.Error(), "WRONGTYPE") {
+		fmt.Println("类型错误: 对哈希键使用了GET命令")
+	}
+}
+
 func main() {
 	pool := createClientWithPool()
 	/*	stringOperations(pool)
